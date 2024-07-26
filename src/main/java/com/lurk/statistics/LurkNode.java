@@ -5,9 +5,9 @@ import java.net.URI;
 public class LurkNode {
 
     private final String ip;
-    private final long port;
+    private final short port;
 
-    public LurkNode(String ip, long port) {
+    public LurkNode(String ip, short port) {
         this.ip = ip;
         this.port = port;
     }

@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import com.lurk.statistics.database.LurkDatabaseHelper;
 
 public class LurkBot implements LongPollingSingleThreadUpdateConsumer {
 
@@ -21,10 +22,13 @@ public class LurkBot implements LongPollingSingleThreadUpdateConsumer {
 
     private final TelegramClient telegramClient;
     private final LurkBotCommandHandler commandHandler;
+    private final LurkDatabaseHelper databaseHelper;
 
-    public LurkBot(String token) {
-        commandHandler = new LurkBotCommandHandler();
-        telegramClient = new OkHttpTelegramClient(token);
+    public LurkBot(LurkConfiguration config) {
+        telegramClient = new OkHttpTelegramClient(config.telegramBotToken());
+        databaseHelper = new LurkDatabaseHelper(config.database().url(), config.database().username(),
+                config.database().password());
+        commandHandler = new LurkBotCommandHandler(databaseHelper);
     }
 
     @Override
@@ -36,24 +40,14 @@ public class LurkBot implements LongPollingSingleThreadUpdateConsumer {
 
     private void onMessageReceived(Message message) {
         if (message.hasText()) {
-            SendMessage response = commandHandler.handle(message.getText(), message.getChatId());
+            String text = message.getText();
+            long chatId = message.getChatId();
+            SendMessage response = commandHandler.handle(text, chatId);
             try {
                 telegramClient.execute(response);
             } catch (TelegramApiException e) {
-                log.error("Exception thrown while sending response to chatId={}", message.getChatId(), e);
+                log.error("Exception thrown while sending response to chatId={}", chatId, e);
             }
         }
-    }
-
-    public static LurkConfiguration getConfig() throws IOException {
-        URL url = Main.class.getResource("/application.properties");
-        if (url == null) {
-            throw new IOException("application.properties not found");
-        }
-        SmallRyeConfig config = new SmallRyeConfigProviderResolver().getBuilder()
-                .withMapping(LurkConfiguration.class)
-                .withSources(new PropertiesConfigSource(url))
-                .build();
-        return config.getConfigMapping(LurkConfiguration.class);
     }
 }

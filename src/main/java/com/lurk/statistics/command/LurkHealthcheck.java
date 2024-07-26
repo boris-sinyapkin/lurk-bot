@@ -40,7 +40,7 @@ public class LurkHealthcheck implements LurkCommand {
 
         // Bail out if chat-id doesn't have any nodes.
         if (visibleNodes.isEmpty()) {
-            return LurkUtils.buildMessageWithText(chatId, "there's no visible nodes available");
+            return LurkUtils.buildMessageWithText(chatId, "There's no visible nodes available for you");
         }
 
         StringBuilder messageText = new StringBuilder("Nodes health status:\n\n");

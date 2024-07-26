@@ -1,19 +1,15 @@
 USE lurkdb;
 
+-- list of known nodes
 CREATE TABLE Node (
-  NodeId INT PRIMARY KEY,
+  NodeId BIGINT PRIMARY KEY,
   NodeIp CHAR(15),
-  NodePort INT NOT NULL
+  NodePort SMALLINT NOT NULL
 );
 
-CREATE TABLE User (
-  UserId INT PRIMARY KEY,
-  UserTelegramChatId INT NOT NULL,
-  UserTelegramNickname CHAR(32) NOT NULL
-);
-
+-- manage access to nodes by Telegram chat id
 CREATE TABLE NodeAccessControl (
-  UserId INT REFERENCES User(UserId),
-  NodeId INT REFERENCES Node(NodeId),
-  PRIMARY KEY (UserId, NodeId)
+  UserTelegramChatId BIGINT NOT NULL,
+  NodeId BIGINT REFERENCES Node(NodeId),
+  PRIMARY KEY (UserTelegramChatId, NodeId)
 );

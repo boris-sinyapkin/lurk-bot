@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.lurk.statistics.command.LurkCommand;
 import com.lurk.statistics.command.LurkHealthcheck;
 import com.lurk.statistics.command.LurkHelp;
+import com.lurk.statistics.database.LurkDatabaseHelper;
 
 /*
  * Handles incoming Telegram commands. 
@@ -19,9 +20,9 @@ public class LurkBotCommandHandler {
     private final LurkNodeManager nodeManager;
     private final Set<LurkCommand> commands;
 
-    public LurkBotCommandHandler() {
+    public LurkBotCommandHandler(LurkDatabaseHelper databaseHelper) {
+        nodeManager = new LurkNodeManager(databaseHelper);
         httpClientWrapper = new LurkHttpClientWrapper();
-        nodeManager = new LurkNodeManager();
         commands = Set.of(
                 new LurkHelp(),
                 new LurkHealthcheck(httpClientWrapper, nodeManager));

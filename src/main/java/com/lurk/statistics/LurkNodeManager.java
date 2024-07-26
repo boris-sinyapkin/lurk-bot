@@ -1,28 +1,20 @@
 package com.lurk.statistics;
 
 import java.util.Set;
+import com.lurk.statistics.database.LurkDatabaseHelper;
 
 /*
  * Node manager is in charge of all available nodes.
  */
 public class LurkNodeManager {
 
-    private final Set<LurkNode> nodes;
+    private final LurkDatabaseHelper databaseHelper;
 
-    public LurkNodeManager() {
-        nodes = Set.of();
+    public LurkNodeManager(LurkDatabaseHelper databaseHelper) {
+        this.databaseHelper = databaseHelper;
     }
 
     public Set<LurkNode> getVisibleNodes(long chatId) {
-        // TODO: 
-        //
-        // There should be some whitelist of chat id's correspond
-        // to some visible nodes. Initially, chat-id doesn't have any
-        // available nodes. It should acquire some of them via some 
-        // currently unimplemented process.
-        //
-        // For now, just return all nodes that we know about, so input
-        // chat-id is unused. 
-        return nodes;
+        return databaseHelper.getNodesFromDatabase(chatId);
     }
 }
