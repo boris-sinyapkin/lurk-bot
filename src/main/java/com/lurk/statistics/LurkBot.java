@@ -1,10 +1,5 @@
 package com.lurk.statistics;
 
-import io.smallrye.config.PropertiesConfigSource;
-import io.smallrye.config.SmallRyeConfig;
-import io.smallrye.config.SmallRyeConfigProviderResolver;
-import java.io.IOException;
-import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -21,13 +16,14 @@ public class LurkBot implements LongPollingSingleThreadUpdateConsumer {
     private static final Logger log = LoggerFactory.getLogger(LurkBot.class);
 
     private final TelegramClient telegramClient;
-    private final LurkBotCommandHandler commandHandler;
     private final LurkDatabaseHelper databaseHelper;
+    private final LurkBotCommandHandler commandHandler;
 
-    public LurkBot(LurkConfiguration config) {
-        telegramClient = new OkHttpTelegramClient(config.telegramBotToken());
-        databaseHelper = new LurkDatabaseHelper(config.database().url(), config.database().username(),
-                config.database().password());
+    public LurkBot() {
+        telegramClient = new OkHttpTelegramClient(LurkConfiguration.telegramBotToken);
+        databaseHelper = new LurkDatabaseHelper(LurkConfiguration.databaseUrl,
+                                                LurkConfiguration.databaseUsername,
+                                                LurkConfiguration.databasePassword);
         commandHandler = new LurkBotCommandHandler(databaseHelper);
     }
 

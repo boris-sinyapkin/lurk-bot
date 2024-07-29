@@ -1,22 +1,22 @@
 package com.lurk.statistics;
 
-import io.smallrye.config.ConfigMapping;
+import java.util.Properties;
+import uk.org.webcompere.lightweightconfig.ConfigLoader;
 
-@ConfigMapping(prefix = "lurkbot")
-public interface LurkConfiguration {
+public final class LurkConfiguration {
 
-    String telegramBotToken();
+    private static final Properties properties;
 
-    Database database();
+    public static final String databaseUrl;
+    public static final String databaseUsername;
+    public static final String databasePassword;
+    public static final String telegramBotToken;
 
-    interface Database {
-
-        String url();
-
-        String username();
-
-        String password();
-
+    static {
+        properties = ConfigLoader.loadPropertiesFromResource("application.properties");
+        databaseUrl = properties.getProperty("lurkbot.database.url");
+        databaseUsername = properties.getProperty("lurkbot.database.username");
+        databasePassword = properties.getProperty("lurkbot.database.password");
+        telegramBotToken = properties.getProperty("lurkbot.telegram-bot-token");
     }
-
 }
