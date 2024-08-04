@@ -1,0 +1,31 @@
+# Deploy: docker compose --env-file ./lurkbot.env.dev -f docker-compose-dev.yaml config
+
+version: '3'
+
+services:
+
+    app:
+        image: azul/zulu-openjdk:17-latest
+        volumes:
+            - ./target:/home/lurk-bot/:ro
+        environment:
+            LURK_BOT_TELEGRAM_TOKEN: ${TELEGRAM_BOT_TOKEN}
+            LURK_BOT_DATABASE_URL: ${MARIADB_DATABASE_URL}
+            LURK_BOT_DATABASE_USERNAME: ${MARIADB_DATABASE_USERNAME}
+            LURK_BOT_DATABASE_PASSWORD: ${MARIADB_DATABASE_PASSWORD}
+        command: >
+            bash /home/lurk-bot/entrypoint.sh
+        depends_on:
+            - db
+
+    db:
+        image: mariadb:11.0
+        volumes:
+            - ./database:/docker-entrypoint-initdb.d/
+        environment:
+            MARIADB_DATABASE: ${MARIADB_DATABASE_NAME}
+            MARIADB_USER: ${MARIADB_DATABASE_USERNAME}
+            MARIADB_PASSWORD: ${MARIADB_DATABASE_PASSWORD}
+            MARIADB_RANDOM_ROOT_PASSWORD: "true"
+        ports:
+            - 3306:3306
