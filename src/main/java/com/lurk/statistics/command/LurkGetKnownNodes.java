@@ -15,26 +15,33 @@ import com.lurk.statistics.LurkNodeManager;
 import com.lurk.statistics.LurkUtils;
 import com.lurk.statistics.LurkUtils.MessageParseMode;
 
-public class LurkHealthcheck implements LurkCommand {
+/*
+ * This command returns the list of known nodes user is eligible for.
+ * Description of particular node contains the following information:
+ *  -   IP:PORT (address)
+ *  -   Location
+ *  -   Data rate
+ */
+public class LurkGetKnownNodes implements LurkCommand {
 
-    private static final Logger log = LoggerFactory.getLogger(LurkHealthcheck.class);
+    private static final Logger log = LoggerFactory.getLogger(LurkGetKnownNodes.class);
 
     private final LurkNodeManager nodeManager;
     private final LurkHttpClientWrapper httpClientWrapper;
 
-    public LurkHealthcheck(LurkHttpClientWrapper httpClientWrapper, LurkNodeManager nodeManager) {
+    public LurkGetKnownNodes(LurkHttpClientWrapper httpClientWrapper, LurkNodeManager nodeManager) {
         this.nodeManager = nodeManager;
         this.httpClientWrapper = httpClientWrapper;
     }
 
     @Override
     public String path() {
-        return "/healthcheck";
+        return "/myproxies";
     }
 
     @Override
     public SendMessage execute(long chatId) {
-        // Retrieve visible nodes for input chat_id.
+        // Retrieve eligible nodes for input chat_id.
         Set<LurkNode> visibleNodes = nodeManager.getVisibleNodes(chatId);
         log.debug("There's {} nodes visible for chat_id={}", visibleNodes.size(), chatId);
 

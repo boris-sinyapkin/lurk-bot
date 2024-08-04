@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.lurk.statistics.command.LurkCommand;
-import com.lurk.statistics.command.LurkHealthcheck;
+import com.lurk.statistics.command.LurkGetKnownNodes;
 import com.lurk.statistics.command.LurkHelp;
 import com.lurk.statistics.database.LurkDatabaseHelper;
 
@@ -25,7 +25,7 @@ public class LurkBotCommandHandler {
         httpClientWrapper = new LurkHttpClientWrapper();
         commands = Set.of(
                 new LurkHelp(),
-                new LurkHealthcheck(httpClientWrapper, nodeManager));
+                new LurkGetKnownNodes(httpClientWrapper, nodeManager));
     }
 
     public SendMessage handle(String path, long chatId) {
