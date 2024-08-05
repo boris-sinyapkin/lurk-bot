@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.lurk.statistics.command.LurkCommand;
 import com.lurk.statistics.command.LurkGetKnownNodes;
 import com.lurk.statistics.command.LurkHelp;
+import com.lurk.statistics.command.LurkStart;
 import com.lurk.statistics.database.LurkDatabaseHelper;
 
 /*
@@ -25,6 +26,7 @@ public class LurkBotCommandHandler {
         httpClientWrapper = new LurkHttpClientWrapper();
         commands = Set.of(
                 new LurkHelp(),
+                new LurkStart(),
                 new LurkGetKnownNodes(httpClientWrapper, nodeManager));
     }
 
