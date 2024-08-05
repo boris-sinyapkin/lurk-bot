@@ -1,6 +1,7 @@
 package com.lurk.statistics.command;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -55,7 +56,7 @@ public class LurkGetKnownNodes implements LurkCommand {
             return LurkUtils.buildMessageWithText(chatId, "There's no visible nodes available for you");
         }
 
-        StringBuilder messageText = new StringBuilder("Nodes health status:\n\n");
+        StringBuilder messageText = new StringBuilder("*__Nodes health status__*:\n\n");
         // Iterate over visible nodes, request their health status
         // and construct response message.
         visibleNodes.forEach(node -> {
@@ -76,13 +77,17 @@ public class LurkGetKnownNodes implements LurkCommand {
         try {
             log.debug("Sending request to {}", nodeUri);
             httpResponse = httpClientWrapper.send(httpRequest);
+            result.setHttpStatusCode(httpResponse.statusCode());
+        } catch (ConnectException e) {
+            log.error("Error occurred while attempting to connect a socket to a remote address and port {}", node);
+            result.setErrorMessage("network error occured or connection was refused remotely");
         } catch (IOException | InterruptedException e) {
-            log.error("Exception thrown while sending request to {}", nodeUri, e);
-            result.setErrorMessage(e.getMessage());
-            return result;
+            log.error("Exception thrown while sending request to {}", node, e);
+            if (e.getMessage() != null) {
+                result.setErrorMessage(e.getMessage());
+            }
         }
 
-        result.setHttpStatusCode(httpResponse.statusCode());
         return result;
     }
 
@@ -112,7 +117,7 @@ public class LurkGetKnownNodes implements LurkCommand {
                 int code = httpStatusCode.get();
                 switch (code) {
                     case 200:
-                        str.append("🟢 *%s* is up and running".formatted(targetNode.toString()));
+                        str.append("🟢 *%s* is *up and running*!".formatted(targetNode.toString()));
                         break;
 
                     default:
@@ -122,7 +127,10 @@ public class LurkGetKnownNodes implements LurkCommand {
                 }
             } else if (errorMessage.isPresent()) {
                 str.append(
-                        "🔴 *%s* is unreachable: %s".formatted(targetNode.toString(), errorMessage.get()));
+                        "🔴 *%s* is *unreachable*: %s".formatted(targetNode.toString(), errorMessage.get()));
+            } else {
+                str.append(
+                        "🔴 *%s* is in unknown state".formatted(targetNode.toString()));
             }
             return str.toString();
         }

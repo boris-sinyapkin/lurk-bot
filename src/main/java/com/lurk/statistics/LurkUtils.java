@@ -22,6 +22,7 @@ public class LurkUtils {
         if (parseMode == MessageParseMode.MARKDOWN) {
             text = text.replace(".", "\\.");
             text = text.replace("-", "\\-");
+            text = text.replace("!", "\\!");
         }
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)
