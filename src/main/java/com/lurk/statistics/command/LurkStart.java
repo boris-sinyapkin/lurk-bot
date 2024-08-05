@@ -20,11 +20,6 @@ public class LurkStart implements LurkCommand {
     }
 
     @Override
-    public String path() {
-        return "/start";
-    }
-
-    @Override
     public String name() {
         return "/start";
     }

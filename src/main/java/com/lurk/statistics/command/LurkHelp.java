@@ -19,11 +19,6 @@ public class LurkHelp implements LurkCommand {
     }
 
     @Override
-    public String path() {
-        return "/help";
-    }
-
-    @Override
     public String name() {
         return "/help";
     }

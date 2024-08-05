@@ -10,11 +10,6 @@ public interface LurkCommand {
     public SendMessage execute(long chatId);
 
     /*
-     * Returns relative HTTP path for this command.
-     */
-    public String path();
-
-    /*
      * Command name.
      */
     public String name();

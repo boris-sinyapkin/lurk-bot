@@ -35,7 +35,9 @@ public class LurkGetKnownNodes implements LurkCommand {
         this.httpClientWrapper = httpClientWrapper;
     }
 
-    @Override
+    /*
+     * HTTP path of this endpoint on the remote side
+     */
     public String path() {
         return "/healthcheck";
     }
