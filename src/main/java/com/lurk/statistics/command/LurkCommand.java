@@ -14,4 +14,9 @@ public interface LurkCommand {
      */
     public String path();
 
+    /*
+     * Command name.
+     */
+    public String name();
+
 }

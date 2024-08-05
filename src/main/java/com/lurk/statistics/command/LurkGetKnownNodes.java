@@ -36,6 +36,11 @@ public class LurkGetKnownNodes implements LurkCommand {
 
     @Override
     public String path() {
+        return "/healthcheck";
+    }
+
+    @Override
+    public String name() {
         return "/myproxies";
     }
 
@@ -55,7 +60,7 @@ public class LurkGetKnownNodes implements LurkCommand {
         // and construct response message.
         visibleNodes.forEach(node -> {
             HealthcheckResult result = doHealthcheck(node);
-            messageText.append(result.toMarkdownString() + "\n\n");
+            messageText.append(result.asMarkdown() + "\n\n");
         });
 
         return LurkUtils.buildMessageWithText(chatId, messageText.toString(), MessageParseMode.MARKDOWN);
@@ -101,23 +106,23 @@ public class LurkGetKnownNodes implements LurkCommand {
             errorMessage = Optional.of(msg);
         }
 
-        String toMarkdownString() {
+        String asMarkdown() {
             StringBuilder str = new StringBuilder();
             if (httpStatusCode.isPresent()) {
                 int code = httpStatusCode.get();
                 switch (code) {
                     case 200:
-                        str.append("🟢 *%s*:\n- responded with *SUCCESS*".formatted(targetNode.toString()));
+                        str.append("🟢 *%s* is up and running".formatted(targetNode.toString()));
                         break;
 
                     default:
-                        str.append("🟡 *%s*:\n- responded with %d HTTP status code".formatted(targetNode.toString(),
+                        str.append("🟡 *%s* responded with unexpected HTTP code (%d)".formatted(targetNode.toString(),
                                 code));
                         break;
                 }
             } else if (errorMessage.isPresent()) {
                 str.append(
-                        "🔴 *%s*:\n- *failed* with error: %s".formatted(targetNode.toString(), errorMessage.get()));
+                        "🔴 *%s* is unreachable: %s".formatted(targetNode.toString(), errorMessage.get()));
             }
             return str.toString();
         }

@@ -28,22 +28,22 @@ public class LurkBotCommandHandler {
                 new LurkGetKnownNodes(httpClientWrapper, nodeManager));
     }
 
-    public SendMessage handle(String path, long chatId) {
-        LurkCommand command = findCommandByPath(path);
+    public SendMessage handle(String name, long chatId) {
+        LurkCommand command = findCommandByName(name);
         if (command != null) {
-            log.info("Executing command {} from chat_id={}", path, chatId);
+            log.info("Executing command {} from chat_id={}", name, chatId);
             return command.execute(chatId);
         }
 
-        log.error("Unknown command '{}' sent from chat_id={}", path, chatId);
+        log.error("Unknown command '{}' sent from chat_id={}", name, chatId);
         return LurkUtils.buildMessageWithText(chatId,
                 "Unknown command '%s'. Try /help to see the list of available commands",
-                path);
+                name);
     }
 
-    private LurkCommand findCommandByPath(String path) {
+    private LurkCommand findCommandByName(String name) {
         for (LurkCommand command : commands) {
-            if (command.path().equals(path)) {
+            if (command.name().equals(name)) {
                 return command;
             }
         }

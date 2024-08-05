@@ -22,4 +22,9 @@ public class LurkHelp implements LurkCommand {
         return "/help";
     }
 
+    @Override
+    public String name() {
+        return "/help";
+    }
+
 }
