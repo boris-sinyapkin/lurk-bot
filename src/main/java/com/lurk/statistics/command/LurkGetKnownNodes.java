@@ -5,6 +5,7 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -80,6 +81,9 @@ public class LurkGetKnownNodes implements LurkCommand {
             log.debug("Sending request to {}", nodeUri);
             httpResponse = httpClientWrapper.send(httpRequest);
             result.setHttpStatusCode(httpResponse.statusCode());
+        } catch (HttpTimeoutException e) {
+            log.error("Request to {} is timed out", node);
+            result.setErrorMessage("request is timed out");
         } catch (ConnectException e) {
             log.error("Error occurred while attempting to connect a socket to a remote address and port {}", node);
             result.setErrorMessage("network error occured or connection was refused remotely");
