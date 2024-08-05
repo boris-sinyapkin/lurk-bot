@@ -11,8 +11,9 @@ public class LurkHelp implements LurkCommand {
     @Override
     public SendMessage execute(long chatId) {
         String helpText = """
-                Available commands:
+                Commands:
                     /help - view this information
+                    /myproxies - list available proxies
                 """;
         return LurkUtils.buildMessageWithText(chatId, helpText);
     }
