@@ -23,6 +23,10 @@ public class LurkUtils {
             text = text.replace(".", "\\.");
             text = text.replace("-", "\\-");
             text = text.replace("!", "\\!");
+            text = text.replace("{", "\\{");
+            text = text.replace("}", "\\}");
+            text = text.replace("(", "\\(");
+            text = text.replace(")", "\\)");
         }
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)

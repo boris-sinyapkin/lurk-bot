@@ -6,7 +6,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
-import java.util.Optional;
+import java.time.Duration;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.lurk.statistics.LurkHttpClientWrapper;
 import com.lurk.statistics.LurkNode;
 import com.lurk.statistics.LurkNodeManager;
+import com.lurk.statistics.LurkNodeStatus;
 import com.lurk.statistics.LurkUtils;
 import com.lurk.statistics.LurkUtils.MessageParseMode;
 
@@ -59,7 +60,7 @@ public class LurkGetKnownNodes implements LurkCommand {
             return LurkUtils.buildMessageWithText(chatId, "There's no visible nodes available for you");
         }
 
-        StringBuilder messageText = new StringBuilder("*__Nodes health status__*:\n\n");
+        StringBuilder messageText = new StringBuilder("🌿 *Nodes health status*\n\n");
         // Iterate over visible nodes, request their health status
         // and construct response message.
         visibleNodes.forEach(node -> {
@@ -72,71 +73,67 @@ public class LurkGetKnownNodes implements LurkCommand {
 
     private HealthcheckResult doHealthcheck(LurkNode node) {
         URI nodeUri = node.getHttpUri(path());
-        HealthcheckResult result = new HealthcheckResult(node);
 
-        HttpResponse<String> httpResponse;
+        HttpResponse<String> httpResponse = null;
         HttpRequest httpRequest = LurkHttpClientWrapper.buildHttpGetRequest(nodeUri);
 
         try {
-            log.debug("Sending request to {}", nodeUri);
+            log.info("Sending request to {}", nodeUri);
             httpResponse = httpClientWrapper.send(httpRequest);
-            result.setHttpStatusCode(httpResponse.statusCode());
         } catch (HttpTimeoutException e) {
             log.error("Request to {} is timed out", node);
-            result.setErrorMessage("request is timed out");
+            return new HealthcheckResult(node, "request is timed out");
         } catch (ConnectException e) {
             log.error("Error occurred while attempting to connect a socket to a remote address and port {}", node);
-            result.setErrorMessage("network error occured or connection was refused remotely");
+            return new HealthcheckResult(node, "network error occured or connection was refused remotely");
         } catch (IOException | InterruptedException e) {
             log.error("Exception thrown while sending request to {}", node, e);
-            if (e.getMessage() != null) {
-                result.setErrorMessage(e.getMessage());
-            }
+            return new HealthcheckResult(node, (e.getMessage() != null) ? e.getMessage() : "unknown error occured");
         }
 
-        return result;
+        log.info("Received response from {}: version={}, method={}, code={}, body_length={}", nodeUri,
+                httpResponse.version(), httpResponse.request().method(), httpResponse.statusCode(),
+                httpResponse.body().length());
+
+        // Check that HTTP_OK status code is received
+        if (httpResponse.statusCode() == 200) {
+            // Parse JSON from received HTTP body
+            return new HealthcheckResult(node, LurkNodeStatus.from(httpResponse.body()));
+        }
+
+        return new HealthcheckResult(node, "unexpected HTTP status code (%d)".formatted(httpResponse.statusCode()));
     }
 
     private class HealthcheckResult {
-        final LurkNode targetNode;
 
-        Optional<Integer> httpStatusCode;
-        Optional<String> errorMessage;
+        final LurkNode node;
+        final LurkNodeStatus nodeStatus;
+        final String errorMessage;
 
-        HealthcheckResult(LurkNode targetNode) {
-            this.targetNode = targetNode;
-            this.errorMessage = Optional.empty();
-            this.httpStatusCode = Optional.empty();
+        HealthcheckResult(LurkNode node, String failureMessage) {
+            this.node = node;
+            this.nodeStatus = null;
+            this.errorMessage = failureMessage;
         }
 
-        void setHttpStatusCode(Integer code) {
-            httpStatusCode = Optional.of(code);
-        }
-
-        void setErrorMessage(String msg) {
-            errorMessage = Optional.of(msg);
+        HealthcheckResult(LurkNode targetNode, LurkNodeStatus nodeStatus) {
+            this.node = targetNode;
+            this.nodeStatus = nodeStatus;
+            this.errorMessage = null;
         }
 
         String asMarkdown() {
-            StringBuilder str = new StringBuilder();
-            if (httpStatusCode.isPresent()) {
-                int code = httpStatusCode.get();
-                switch (code) {
-                    case 200:
-                        str.append("🟢 *%s* is *up and running*!".formatted(targetNode.toString()));
-                        break;
+            if (errorMessage != null) {
+                return "🔴 Node __%s__ is *unreachable*: %s".formatted(node, errorMessage);
+            }
 
-                    default:
-                        str.append("🟡 *%s* responded with unexpected HTTP code (%d)".formatted(targetNode.toString(),
-                                code));
-                        break;
-                }
-            } else if (errorMessage.isPresent()) {
-                str.append(
-                        "🔴 *%s* is *unreachable*: %s".formatted(targetNode.toString(), errorMessage.get()));
-            } else {
-                str.append(
-                        "🔴 *%s* is in unknown state".formatted(targetNode.toString()));
+            StringBuilder str = new StringBuilder("🟢 Node __%s__ is *up and running*!".formatted(node));
+            if (nodeStatus != null) {
+                log.info("Node {} information: {}", node, nodeStatus);
+                Duration nodeUptime = nodeStatus.getNodeUptime();
+                str.append("\n        🕒 started at *%s*".formatted(nodeStatus.getNodeStartedUtcDate()));
+                str.append("\n        🫀 alive *%d* hours *%d* min *%d* sec"
+                        .formatted(nodeUptime.toHoursPart(), nodeUptime.toMinutesPart(), nodeUptime.toSecondsPart()));
             }
             return str.toString();
         }
